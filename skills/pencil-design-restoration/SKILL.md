@@ -1,18 +1,28 @@
 ---
 name: pencil-design-restoration
-description: "Restore an Ardena design稿, page, or component in any target .pen file with mcp_pencil_batch_design and carry the change through the Flutter repo. Use when you need to rebuild a .pen file from the existing .pen structure, screenshots, benchmark references, or user instructions; assess non-display-layer impact first (provider, route, model, service, database, i18n, assets, analytics, tests); create an adjustment plan; restore the design in Pencil; then execute the required Flutter code changes."
+description: "Restore a design稿, page, or component in a target .pen file with Pencil MCP and carry the change through the Flutter repo. Use when rebuilding from existing .pen structure, screenshots, benchmark references, or user instructions; assess non-display-layer impact first; map Pencil layout safely to Flutter structure; avoid naive mistakes like making whole regions scrollable, restoring placeholders as final widgets, or mirroring design lists directly into ListView/GridView; then restore the design and execute the required Flutter code changes."
 argument-hint: "描述目标 .pen 文件、要还原的范围（整个设计稿 / 页面 / 组件）、参考来源、对应 Flutter 落点，以及是否要求连带改 provider、route、model、service、i18n 或测试"
 user-invocable: true
 ---
 
 # Pencil Design Restoration
 
+## Common Error Assessment
+
+- 最常见的结构性错误不是颜色或间距，而是把 Pencil 里的视觉分区直接一比一翻译成 Flutter 组件树。
+- 高风险错误一：把整块页面区域都塞进单个滚动容器，只因为设计稿看起来是“一个长页面”；这会吞掉固定 header、bottom action、tab、filter bar 或局部可滚动区的真实边界。
+- 高风险错误二：把设计稿里的占位组件、skeleton、mock 卡片、示例头像、示例文案或演示图表直接还原成最终 Flutter 组件，而不是先判断它们是占位态、空态、示意内容还是正式 UI。
+- 高风险错误三：看见重复行、卡片列或表格块，就直接落成 ListView、GridView 或 builder；很多设计里的重复结构只是静态排版示意、小样本布局，真实实现可能应该是普通 Column、Wrap、分段 section 或仅一个可复用 item。
+- 高风险错误四：为追求“截图像”，把多个滚动体嵌套起来，例如 SingleChildScrollView 包整页，再在内部放 ListView/GridView；这通常会引出约束错误、手势冲突和错误的可视层级。
+- 高风险错误五：把组件实例里的 slot、占位区和数据槽位直接扁平化成固定子节点，导致后续 Flutter 无法用真实数据、状态或复用组件替换。
+- 当前 skill 已覆盖“不要把样例数据当真值”，但还需要把这些 Pencil 到 Flutter 的结构映射错误显式写成硬规则与验证项。
+
 ## Purpose
 
-- 用 Pencil MCP 还原当前 Ardena 仓库中的设计稿，不把任务截断在视觉层。
+- 用 Pencil MCP 还原设计稿，不把任务截断在视觉层。
 - 在任何设计修改前，先评估“完全还原设计稿”会逼出哪些非显示层代码调整。
 - 先产出可执行的调整方案，再还原设计稿，最后继续执行 Flutter 仓库中的对应改动。
-- 让 .pen 设计、表现层代码和非显示层接线保持一致，而不是各自漂移。
+- 让 .pen 设计、Flutter 组件树和非显示层接线保持一致，而不是把视觉结构生硬复制成错误的实现结构。
 
 ## When To Use
 
@@ -33,6 +43,15 @@ user-invocable: true
 - Flutter 落点优先从 lib/features 下对应 feature 开始，再看 lib/shared/presentation、lib/shared/data、lib/app.dart 和路由入口。
 - 任何文案调整都要同步检查 lib/l10n。
 
+## Pencil To Flutter Mapping Rules
+
+- 先把 Pencil 节点分成四类：固定 chrome、主内容区、局部滚动区、覆盖层；不要把整个 frame 默认翻译成一个可滚动 body。
+- Flutter 页面默认只应有一个主滚动拥有者；只有当设计明确存在独立滚动区域时，才引入第二个滚动体。
+- 设计稿里的重复 item 先判断语义：它是数据驱动集合、静态展示组、还是占位示意；在语义未确认前，不要直接落成 ListView、GridView、CustomScrollView 或 Sliver 列表。
+- 设计稿中的 placeholder、skeleton、灰块、示意头像、演示图表、假按钮或 mock 文案，先判断它们属于 loading、empty、demo data 还是最终 UI；不要直接当成最终组件实现。
+- 组件实例优先保留 slot 和可替换区域语义；恢复设计时要为 Flutter 留出可复用 widget、builder 和状态分支，而不是把 slot 展平为固定子树。
+- 如果一个区域在 Flutter 中最终会由真实数据驱动，设计恢复时优先还原 item 模式、section 边界、间距规则和状态槽位，而不是复制完整长列表。
+
 ## Default Boundaries
 
 - 如果用户显式指定了 .pen 文件，就只操作该目标文件。
@@ -47,6 +66,10 @@ user-invocable: true
 - 读取或修改 .pen 文件时，只能使用 Pencil MCP 工具，不能用普通文件读取、grep 或文本编辑工具直接碰 .pen。
 - 默认不检查设计文档、PRD 或其他说明文档；除非用户明确要求，否则只基于目标 .pen 文件及直接提供的可视参考推进。
 - 设计稿中的数字、姓名、头像、列表项、标签、图表值、订单号或摘要文本可能只是数据填充位；在确认其真实语义前，不要把这些示例值逐字逐项还原成最终设计或代码常量。
+- 在设计与 Flutter 对齐时，先决定谁是固定区域、谁是滚动区域、谁是覆盖层；不要因为画布是纵向长图，就把整个页面都包进滚动容器。
+- 在确认数据语义前，不要把设计稿中的重复结构直接实现为 ListView、GridView、SliverList、SliverGrid 或其他 builder 列表。
+- 在确认占位语义前，不要把 placeholder、skeleton、mock 卡片、演示头像或样板按钮直接还原成最终 Flutter 组件。
+- 默认避免嵌套滚动；如果必须存在多个滚动体，必须在方案里明确各自的滚动 owner、边界和手势关系。
 - 在第一次设计修改前，必须先明确最小代码锚点，并写出非显示层调整方案。
 - 如果设计完全还原会牵出未定义的业务规则、接口或数据结构，先把阻塞点写清楚，再决定分阶段实施，不要默默脑补规则。
 - 设计恢复按可验证的小批次推进；单次 mcp_pencil_batch_design 操作列表尽量控制在 25 条以内。
@@ -80,7 +103,10 @@ user-invocable: true
 ### 4. Assess Non-Display Impact Before Design Restoration
 
 - 在动设计前，明确“如果完全还原这个设计，哪些非显示层必须跟上”。
+- 先决定 Pencil 里的固定区、主滚动区、局部滚动区和 overlay 如何映射到 Flutter 页面结构；这是设计恢复前必须完成的结构判断，不要后补。
 - 先区分哪些是结构性 UI 元素，哪些更像数据填充位或样例内容；标题、导航、固定按钮文案通常直接还原，列表行、统计值、图表点、示例头像或业务编号则需要先判断真实数据来源。
+- 对重复区域再做一次语义判断：静态小样本、可复用 item 模式、还是真正的数据列表；只有最后一种才默认指向 ListView、GridView 或 Sliver。
+- 对 placeholder、skeleton、mock 内容再做一次状态判断：它属于 loading、empty、demo、preview 还是最终态；没有判断前，只恢复槽位和结构，不恢复成最终业务组件。
 - 至少检查以下类别：
 - route 与入口参数
 - 本地状态与 Riverpod provider 边界
@@ -99,15 +125,18 @@ user-invocable: true
 ### 5. Restore The Design In Pencil
 
 - 使用 mcp_pencil_batch_design 分批恢复结构、内容和样式，优先搭骨架，再补细节。
+- 恢复骨架时，先按 Flutter 目标结构确认固定区、主内容区、局部滚动区和 overlay，不按截图表象直接铺满一个纵向容器。
 - 如果已有相近组件，优先复用、复制或替换，而不是从零散落创建。
 - 组件恢复优先保持可复用结构；整页恢复优先按区域或模块分块推进。
 - 遇到疑似数据填充位时，优先恢复信息密度、排版模式、容器结构和数据槽位，不默认复制所有示例值。
+- 遇到重复 item 时，优先恢复一个或少量代表性 item 与 section 结构，保留其重复模式；不要在 .pen 或 Flutter 中机械展开一整段长列表。
+- 遇到 placeholder 或 skeleton 时，优先恢复其状态角色和占位边界，不默认把它升级为正式组件或真实数据块。
 - 批量规范色彩、字体、圆角、间距时，优先考虑 search_all_unique_properties 与 replace_all_matching_properties。
 
 ### 6. Validate The Design Immediately
 
 - 每一批关键设计修改后，都要立刻看一次截图或布局，不把错位积累到最后。
-- 重点检查：重叠、裁切、对齐、占位结构、组件层级和视觉节奏。
+- 重点检查：重叠、裁切、对齐、占位结构、组件层级、视觉节奏，以及固定区与滚动区边界是否清晰。
 - 如果是从截图恢复，确保不是只像，而是结构上也支持后续代码实现。
 
 ### 7. Execute The Adjustment Plan In Flutter
@@ -115,6 +144,9 @@ user-invocable: true
 - 设计恢复达到可用状态后，立即执行前面列出的非显示层调整方案。
 - 改动顺序遵循最小拥有者与依赖方向：shared component 或 screen -> provider/state -> route -> data/model/service -> i18n/test。
 - 所有表现层改动优先复用当前仓库已有主题、共享组件、导航和交互模式。
+- 页面实现时先确定唯一主滚动 owner；固定 header、filter、CTA、bottom bar、tab 或 overlay 不要因为设计稿是长页面就一起塞进滚动体。
+- 重复视觉模式先落成可复用 item、section 或 builder 边界，再决定是否真的需要 ListView/GridView/Sliver；不要从设计稿直接推导出整页列表实现。
+- 占位组件、skeleton、mock 内容只在对应状态分支里实现；不要把它们当成常驻正式 UI。
 - 如果设计新增了状态、入口、提交动作或数据来源，不要把业务逻辑硬塞进 widget 本地变量。
 - 高影响项只输出可执行落地方案与影响面，不默认自动提交实现。
 - 只在确有需要时触发代码生成，并在总结里说明用户是否还需补跑生成链。
@@ -127,6 +159,9 @@ user-invocable: true
 
 ## Non-Display Checklist
 
+- 固定区、主滚动区、局部滚动区与 overlay 的结构边界
+- 列表、网格、section 与复用 item 的真实语义
+- placeholder、skeleton、demo content 与正式 UI 的状态归属
 - 路由入口、深链、参数与跳转链路
 - Provider 状态边界与依赖关系
 - 异步状态覆盖是否完整
@@ -142,7 +177,10 @@ user-invocable: true
 - 设计稿已在 .pen 中恢复到可验证状态，而不是停留在口头方案。
 - 非显示层影响在设计修改前已经评估过，并形成了明确方案。
 - 设计恢复完成后，方案中的必要代码调整已经继续执行，而不是被留空。
+- 已明确区分固定区与滚动区，没有把整个区域误塞进单一滚动容器。
+- 已区分重复视觉模式与真实数据列表，没有从设计稿直接机械生成 ListView、GridView 或长 builder 链路。
 - 已区分固定展示内容与数据填充位，没有把样例数据误还原为最终常量、真实记录或错误的数据结构假设。
+- 已区分占位组件与正式组件，没有把 skeleton、placeholder 或 mock 内容误还原为最终常驻 UI。
 - 设计验证与代码验证至少各完成一次聚焦检查。
 - 任何剩余阻塞都被显式列出，没有被静默跳过。
 
@@ -158,3 +196,5 @@ user-invocable: true
 - /pencil-design-restoration 在 docs/marketing_site.pen 还原首页 Hero 区域，先评估 route、共享组件和文案影响，再执行代码调整
 - /pencil-design-restoration 根据设计截图恢复一个统计卡片组件，先判断 shared widget、theme token 和数据模型是否要跟着改
 - /pencil-design-restoration 完整还原一个 onboarding flow，先列出 route、state、i18n、analytics 的影响，再分批恢复设计并执行代码方案
+- /pencil-design-restoration 还原一个带筛选栏和底部操作条的列表页，先判断哪些区域固定、哪些区域可滚动，再决定 Flutter 结构
+- /pencil-design-restoration 根据截图恢复一个重复卡片区，先判断它是静态 section 还是数据驱动列表，不要直接生成 ListView

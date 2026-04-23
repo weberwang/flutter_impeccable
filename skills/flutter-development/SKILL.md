@@ -1,190 +1,168 @@
 ---
 name: flutter-development
-description: "Implement and modify features in the current Ardena Flutter repository. Use for screens, widgets, Riverpod providers, GoRouter routes, Drift database code, repository or service changes, Freezed or JSON models, localization updates, Firebase wiring, and build_runner-backed source changes in this workspace. Do not use for pure design critique, generic Flutter teaching, or work outside this repo."
-argument-hint: "描述目标功能或缺陷，并注明落点（UI / Provider / Route / Database / Service / Model / i18n / Firebase）以及是否涉及代码生成"
+description: "Implement and modify features in a Flutter repository while following its existing architecture, tooling, and UI conventions. Use for screens, widgets, state, routes, services, models, persistence, localization, platform wiring, and source-generation-backed changes."
+version: 2.1.1
+argument-hint: "[目标或缺陷] [落点: UI / State / Route / Data / Model / i18n / Platform] [是否涉及代码生成]"
 user-invocable: true
 ---
 
-# Ardena Flutter Development
+# Implement Flutter Features Within Repository Constraints
+
+## Mandatory Preparation
+
+- 对用户可见 UI 或交互有改动时，先查看目标页面、路由入口、附近共享组件和相关状态文件，再决定改动落点和复用边界。
+- 先读 `pubspec.yaml`、应用入口、路由入口和任务附近的 feature 文件，再决定改动落点。
+- 先判断任务是否涉及代码生成、本地化、测试、原生配置或运行时初始化。
 
 ## Purpose
 
-- 把需求直接落到当前 Ardena Flutter 仓库，而不是输出通用建议。
-- 默认采用整洁架构思路设计与实现，先分清 presentation、domain、data 的职责，再落最小改动。
-- 以最小改动完成实现、修复或接线，并保持与当前仓库结构、工具链和插件配置一致。
-- 优先做可验证的本地改动，避免顺手重构无关代码。
-- 只要任务触及 UI、页面、组件、交互或其他表现层实现，优先复用当前仓库已有的页面结构、主题、共享组件与交互模式。
+- 在当前 Flutter 仓库里直接实现或修改功能，而不是退回到泛化 Flutter 建议。
+- 先识别并复用该仓库现有的架构、状态管理、导航、主题、目录组织和工具链。
+- 用最小改动完成实现、修复或接线，并把验证范围控制在被触达的切片内。
 
 ## When To Use
 
-- 新增或修改某个 feature 下的 screen、widget、sheet、dialog、动画或页面交互。
-- 新增或修复 Riverpod provider、异步加载状态、提交状态或局部业务编排。
-- 调整 GoRouter 路由、页面入口、MainShell 分支或跳转链路。
-- 修改 Drift table、DAO、database、repository、service 或与本地持久化相关的数据链路。
-- 新增或调整 Freezed、JSON、请求响应、领域实体或映射逻辑。
-- 增加用户可见文案、ARB key、主题/语言设置、Firebase 统计或崩溃上报接线。
-- 任何会触发 build_runner、l10n 或其他生成链的 Flutter 仓库内实现型任务。
+- 新增或修改 screen、page、widget、dialog、sheet、表单、列表、详情页或完整交互流程。
+- 新增或修复状态管理逻辑，例如 provider、bloc、cubit、controller、notifier、view model 或其他既有状态层实现。
+- 调整路由、页面入口、守卫、重定向、壳层导航或页面跳转链路。
+- 修改 repository、service、data source、缓存、数据库、本地持久化、网络请求或平台通道接线。
+- 新增或调整模型、序列化、映射、schema、领域实体、配置对象或其他源文件驱动的数据结构。
+- 增加用户可见文案、语言切换、主题设置、通知、深链、Firebase 或其他 Flutter 平台接线。
+- 任何会触发 build_runner、gen-l10n、资源生成或其他生成链的 Flutter 实现型任务。
 
 ## Do Not Use
 
 - 纯设计评审、视觉批评、交互打分或改稿拆单。
-- 与当前仓库无关的通用 Flutter 问答。
-- 只需要产出方案文档、不需要落代码的任务。
-- 大范围架构迁移或技术选型讨论，但没有明确代码锚点的任务。
+- 纯 Flutter 教学、框架解释或 API 问答。
+- 只需要方案文档、不需要改代码的任务。
+- 没有代码锚点的宽泛架构讨论或技术选型讨论。
 
-## Workspace Snapshot
+## Repository Profiling
 
-### Current Stack
+### Read First
 
-- 状态管理以 Riverpod 3 为核心，当前仓库使用 flutter_riverpod 和 hooks_riverpod。
-- 导航使用 GoRouter，主路由入口在共享导航层。
-- 动画实现统一优先使用 animations 包中的 Material motion 组件，不优先自写分散的页面切换动画。
-- 本地结构化数据使用 Drift 与 drift_flutter。
-- 网络访问使用 Dio。
-- 模型与序列化使用 Freezed、json_annotation、json_serializable。
-- 仓库已配置 build_runner、drift_dev、freezed、json_serializable 生成链。
-- 国际化启用了 flutter generate，并有 l10n.yaml 与 lib/l10n 目录。
-- 运行期集成了 Firebase Core、Analytics、Crashlytics。
+- `pubspec.yaml`，确认依赖、SDK 约束、代码生成器和插件。
+- 应用入口，例如 `lib/main.dart`、`lib/app.dart` 或等价壳层文件。
+- 路由入口、主题入口、依赖注入入口、错误处理入口和环境配置文件。
+- 任务附近的页面、状态、数据层、共享组件和测试文件。
+- 任何生成源文件，例如 ARB、Freezed、JSON 注解类、数据库 schema、router 配置或 build 配置。
 
-### Directory Anchors
+### Detect Before Assuming
 
-- 应用入口在 lib/main.dart，负责 Firebase 与数据库初始化，并在 ProviderScope 中启动应用。
-- 应用壳层在 lib/app.dart，负责 ScreenUtilInit、MaterialApp.router、主题模式和语言设置。
-- 功能代码采用 feature-first 组织，主目录为 lib/features/<feature>/。
-- 跨 feature 共享能力位于 lib/shared/data、lib/shared/domain、lib/shared/presentation。
-- 路由定义位于 lib/shared/presentation/navigation/app_router.dart 及其相邻导航文件。
-- 本地化资源位于 lib/l10n/app_en.arb、lib/l10n/app_zh.arb 及生成文件。
+- 先识别项目现用状态管理模式，例如 Riverpod、Bloc、Cubit、Provider、GetX、MobX、ValueNotifier 或自定义控制层。
+- 先识别项目现用导航模式，例如 Navigator、GoRouter、AutoRoute、Beamer、Routemaster 或自定义封装。
+- 先识别网络、缓存、数据库和平台能力，例如 Dio、http、GraphQL、Retrofit、Drift、Hive、Isar、sqflite、shared_preferences、secure_storage、Firebase、Supabase 或平台通道。
+- 先识别模型和生成链是否使用 Freezed、json_serializable、built_value、retrofit_generator、injectable、riverpod_generator、drift_dev、flutter_gen 或 gen-l10n。
+- 先识别测试和验证方式，例如 flutter_test、integration_test、golden tests、lint、analyze、脚本或 CI 命令。
 
-## Hard Rules
+### Choose The Owning Slice
 
-### Architecture Boundaries
+- UI 任务优先从具体 page、screen、widget 或它依赖的状态入口入手。
+- 路由任务优先从路由表、导航壳层和页面跳转调用点入手。
+- 数据任务优先从 repository、service、DAO、database、mapper 或模型源文件入手。
+- 平台任务优先从插件初始化、原生配置、权限声明或桥接调用点入手。
 
-- 默认按整洁架构组织改动：presentation 负责展示与交互，domain 承载规则与用例，data 负责持久化、远端接线与实现细节。
-- feature 内代码优先放入所属模块，不要把 feature 私有逻辑塞进 shared。
-- shared 只承载跨模块复用的导航、主题、服务、数据库、基础组件与通用领域概念。
-- 表现层负责渲染、交互和状态订阅，不直接承担数据库、网络或复杂业务编排。
-- 数据访问、SDK 接线和持久化逻辑应留在 data 层或 shared service/repository 中。
-- 改动从最小拥有者开始，先找真正控制行为的文件，不从外围接线层盲改到底层。
-
-### UI And State Rules
-
-- 处理任何 UI、screen、widget、sheet、dialog、交互或其他表现层改动时，优先复用当前仓库已有的页面结构、主题、共享组件与交互模式。
-- 新 UI 默认优先使用 ConsumerWidget、HookConsumerWidget 或 HookWidget，与现有 Riverpod 接入方式保持一致。
-- 临时 UI 状态留在页面内部，例如文本输入、焦点、滚动、选中态、动画控制或 sheet 展开状态。
-- 业务状态、异步加载、提交流程和跨组件共享状态放入 Riverpod provider。
-- 复用 shared/presentation 下的主题、导航、动画和基础组件，避免为单次场景发明新基类。
-- 需要动画时，优先使用 animations: ^2.1.2 提供的 Material motion 原语，而不是先引入自定义 AnimationController 或第三方替代方案。
-- 只在动画能提升层级、连续性、状态切换可理解性时使用动画；避免纯装饰性循环动画、重弹簧效果，避免在高频操作页堆叠多个同时进行的动效。
-- 动画选型默认遵循以下映射：容器打开或卡片进详情优先 OpenContainer；同级页面或 tab 内容切换优先 SharedAxisTransition；列表/详情或主内容替换优先 FadeThroughTransition；局部子树切换优先 PageTransitionSwitcher。
-- 默认保持短时长与低认知负担，常规转场优先控制在约 150-300ms；若现有页面已明确禁用或弱化动画，保持一致，不逆向放大动效存在感。
-- 用户可见文本不得硬编码在最终实现里，新增文案必须同步到 ARB 并通过 AppLocalizations 读取。
-- 应用壳层已使用 ScreenUtilInit，新增页面和组件不要写死只适配单一尺寸的布局假设。
-
-### Navigation Rules
-
-- 路由与重定向逻辑统一通过 GoRouter 入口维护，不在页面内分散复制导航规则。
-- 新路由优先补充到 AppRoutes 常量和 app_router 路由表，再修改页面侧跳转调用。
-- 涉及底部导航或主壳层流转时，同步检查 MainShell 与过渡动画辅助函数。
-- 如果只是修改现有入口，不要额外引入第二套导航封装。
-
-### Data, Model, And Generation Rules
-
-- Drift table、DAO、database 与 repository 的改动按数据流顺序推进，不直接让 UI 绕过仓库访问底层。
-- Freezed、JSON、数据库 schema、注解 provider 与 l10n 都属于源文件改动，生成文件不是手改目标。
-- 任何修改注解、part 声明、Freezed 类、JSON 模型、Drift 表结构或 ARB 输入的任务，都应把代码生成影响面算入任务范围。
-- 当前仓库已经存在基于注解与生成文件的实现模式，修改时优先匹配被触达文件附近的既有写法，不额外并行引入第二套风格。
-- 除非用户明确要求，不要改依赖版本，不要顺手调整 pubspec 中无关依赖。
-
-### Tooling Rules
-
-- 能用 Dart MCP 工具完成的 analyze、format、fix、项目分析，优先不用 shell。
-- 没有 MCP 对应能力时，再使用终端执行 Flutter、Dart 或 build_runner 命令。
-- 生成、分析、格式化、测试只在与当前任务直接相关时运行，不扩大验证范围。
-
-## Decision Flow
+## Implementation Flow
 
 ### 1. Classify The Request
 
-- 先判断任务落在 UI、Provider、Route、Database、Service、Model、i18n、Firebase 的哪一层。
-- 如果需求跨 presentation、domain、data 多层，先明确边界，再按整洁架构依赖方向逐层落地。
-- 再判断是否触发生成链：Freezed、JSON、Drift、Riverpod 注解或 l10n。
-- 如果跨多层，按当前数据流顺序处理，而不是从页面直接改到底层。
+- 先判断任务落在 UI、State、Route、Data、Model、i18n、Platform 的哪一层。
+- 先找出直接控制行为的文件或拥有者层，再补相邻影响面。
+- 先判断是否触发代码生成、本地化更新、测试或原生配置修改。
 
-### 2. Choose The Smallest Anchor
+### 2. Reuse Repository Patterns
 
-- UI 任务优先从具体 screen、widget 或它 watch 的 provider 入手。
-- 路由任务优先从 app_router、MainShell、页面跳转调用点入手。
-- 数据任务优先从 repository、DAO、service、database 或模型源文件入手。
-- 文案任务优先从 ARB 与具体消费该文案的组件入手。
+- 匹配当前仓库已有的目录组织、命名方式、组件组合、状态封装和依赖注入习惯。
+- 优先复用现有共享组件、主题、服务、导航辅助和状态模型，不平行引入第二套模式。
+- 如果仓库没有明确强约定，优先使用最简单、最 Flutter-native、且与附近实现一致的做法。
 
-### 3. Implement By Layer
+### 3. Edit In The Owning Layer
 
 #### UI Or Widget Change
 
-- 这是强制规则：处理 presentation 或表现层代码时，优先复用当前仓库已有的页面结构、主题、共享组件与交互模式。
-- 先复用现有页面结构、共享组件和主题样式。
-- 若交互需要连续性表达，先判断是否能用 animations 包现成原语解决，再决定是否值得引入显式动画控制。
-- 异步页面必须考虑 default、loading、empty、error、success 或任务特有边界状态。
-- 只要业务状态开始跨组件共享，立即提升到 provider，不把业务状态塞进 widget 本地变量。
+- 临时 UI 状态留在页面内部，例如输入、焦点、滚动、选中态、展开态和局部动画控制。
+- 复用现有页面结构、主题和共享组件，不为单次场景发明新的 UI 基类。
+- 异步页面至少覆盖任务相关的 loading、empty、error、success 或 refresh 状态。
 
-#### Provider Or State Change
+#### State Change
 
-- provider 放在所属 feature 或 shared 的就近位置。
-- 让 provider 暴露清晰、最小的状态与动作接口，不把 UI 细节倒灌进状态层。
-- watch 与 read 只订阅真正需要的依赖，避免无差别放大重建范围。
+- 状态接口保持清晰、最小，不把 UI 细节倒灌到状态层。
+- 订阅只覆盖真正需要的依赖，避免无差别放大重建范围。
+- 共享异步状态和业务编排放在项目既有状态层，而不是塞回 widget。
 
 #### Route Change
 
-- 先补 AppRoutes 与路由表，再补页面导航入口。
-- 若页面位于主壳层，连同 shell 分支、过渡方式、重定向条件一并检查。
-- 若改动会影响 onboarding、订阅或功能开关，检查 router redirect 和条件路由。
+- 先补路由常量、路由表、守卫或 redirect，再补页面侧调用。
+- 若改动位于壳层导航、分支导航或嵌套路由，连同容器页和守卫条件一起检查。
 
-#### Data, Repository, Or Service Change
+#### Data Or Model Change
 
-- 外部 SDK、数据库和网络接线保持在 service、repository、DAO 或 database 里。
-- feature 级数据实现放在对应 feature/data，跨模块基础能力放在 shared/data。
-- 字段或协议变化时，同步检查 mapper、repository 出口、provider 入参和 UI 消费链。
+- I/O、数据库、缓存、平台 SDK 和网络接线保持在 service、repository、DAO、data source 或等价数据层。
+- 协议、字段或 schema 变化时，顺着 model -> mapper -> repository -> state -> UI 的链路检查影响面。
+- 修改源文件，不手改生成文件。
 
-#### Model Or Schema Change
+#### i18n Or Platform Change
 
-- 以注解类、实体、DTO、table、ARB 文件等源文件为真源。
-- 修改时同步维护 import、part 声明、命名和所属层级。
-- 不手改生成产物；需要生成时，明确执行或明确说明仍需生成。
-
-#### i18n Change
-
-- 同时更新 app_en.arb 与 app_zh.arb。
-- UI 中统一通过 AppLocalizations 读取新文案。
-- 若改动设置页、主题或语言切换，连同 app.dart 中的 locale/themeMode 接线一起检查。
+- 若仓库已启用本地化，新增用户可见文案应进入本地化资源而不是硬编码。
+- 平台配置只在任务需要时修改，并同步检查权限、初始化、错误回退和运行时入口。
 
 ### 4. Validate Immediately
 
-- 第一次实质性编辑后，立刻做一次聚焦验证，不继续扩面。
-- 优先验证被触达的文件、feature 或最小可执行切片。
-- 能做窄范围 analyze 就先 analyze；能做窄范围测试就先跑窄范围测试；需要时再补 format。
-- 若改动涉及生成链，运行生成命令或明确说明当前环境下尚需用户补跑生成步骤。
+- 第一次实质性编辑后，立刻做一次最窄验证，不继续扩面。
+- 优先执行被触达切片最相关的 analyze、test、format 或生成命令。
+- 验证失败时，先修当前切片并复跑同一验证，再决定是否扩大范围。
 
-## Completion Checks
+## Hard Rules
 
-- 每一处改动都能直接追溯到当前任务，而不是顺手优化。
-- 改动过程仍符合整洁架构边界，没有把业务规则塞进表现层，也没有让 data 依赖倒灌回上层。
-- 文件落点符合当前仓库的 feature-first 与 shared 分层。
-- 路由、文案、状态、映射、生成链与初始化接线没有遗漏相邻影响面。
-- 若任务触及 UI 或表现层，已先核对现有页面结构、共享组件、主题与交互约束，再开始设计或实现。
-- 若任务引入动画，已优先评估 animations 包原语是否足够，并说明所选动画是否服务于连续性、层级或状态理解。
-- 没有手改生成文件，也没有引入与任务无关的新依赖或新模式。
-- 总结时明确说明是否触发了代码生成、格式化、分析或测试。
+### Repository-First Rules
+
+- 先匹配当前仓库的真实实现模式，再开始写代码。
+- 从最小拥有者开始改，不从外围接线层盲改到底层。
+- 不做与任务无关的重构，不顺手改依赖版本或替换项目既有模式。
+
+### UI And Interaction Rules
+
+- 页面与组件优先复用当前仓库已有的壳层、主题、共享组件和交互模式。
+- 顶层页面遵循当前项目的安全区、滚动、布局和适配约定。
+- 若仓库已启用本地化，新增用户可见文本应走既有 i18n 机制。
+
+### State And Routing Rules
+
+- 不并行引入第二套状态管理或导航模型。
+- 页面局部状态就近管理；跨组件或跨页面状态才进入共享状态层。
+- 路由、重定向和页面入口统一回到项目既有导航入口维护。
+
+### Data, Generation, And Platform Rules
+
+- 数据访问和外部接线留在数据层，不让 UI 直接穿透到底层实现。
+- 模型、注解类、schema、ARB、router 配置和其他源文件是真源；生成产物不是手改目标。
+- 只有在任务需要时才改 Android、iOS、Web、macOS、Windows、Linux 配置。
+
+### Verification Rules
+
+- 优先使用仓库真实存在的 Flutter、Dart、build_runner、gen-l10n、测试和格式化命令。
+- 有更窄的可执行验证时，不用 diff 代替。
+- 如果当前环境无法完成验证，明确说明还需要补跑什么命令。
+
+## Verify
+
+检查：
+
+- 被触达文件在可行范围内通过 analyze、test、format 或生成验证。
+- 若涉及生成链，生成产物已刷新或已明确说明仍需补跑。
+- UI、状态、路由、数据和平台接线之间的最小链路仍然闭合。
+- 用户可见文案、权限、初始化和错误路径没有因改动脱节。
 
 ## Output Style
 
-- 默认直接改代码，不先输出长篇方案。
-- 只在真正阻塞落地时提问，例如目标模块不明确、入口页面未知、数据契约缺失。
-- 收尾时只保留实施摘要、关键影响面、验证结果和是否还需生成产物。
+- 默认直接落代码，不先输出长篇方案。
+- 只在真正阻塞实施时提问，例如代码锚点不明确、入口未知或数据契约缺失。
+- 收尾只保留实施摘要、关键影响面、验证结果和仍需补跑的步骤。
 
 ## Example Prompts
 
-- /flutter-development 在 tasks 模块新增一个筛选状态，补齐 provider、列表 UI 和中英文文案
-- /flutter-development 修复 settings 页面主题切换链路，只改 provider 与 app.dart 接线
-- /flutter-development 给 weekly_reset 增加一个 Drift 字段，并补齐 repository 到 UI 的最小链路
-- /flutter-development 新增一个 GoRouter 页面入口，保持现有 MainShell 结构不变
-- /flutter-development 调整 ai_advisor 的加载和错误状态，保持现有数据源与导航不变
+- /flutter-development 在某个 feature 下新增一个筛选状态，并补齐列表 UI 和状态链路
+- /flutter-development 修复一个设置页的主题或语言切换，只改最小接线
+- /flutter-development 给某个模型新增字段，并补齐序列化、状态和 UI 消费链
+- /flutter-development 新增一个页面路由入口，保持现有导航架构不变
+- /flutter-development 给某个功能接入本地持久化，只补最小 repository 到页面链路
