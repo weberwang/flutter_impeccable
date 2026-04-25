@@ -1,0 +1,70 @@
+{
+  "craft": {
+    "description": "Shape and build a Flutter mobile/native screen, widget, or flow end-to-end. Uses project ThemeData, routing, state management, Semantics, adaptive layout, and tests. Use when building Flutter UI, Dart widgets, app flows, or feature screens.",
+    "argumentHint": "[screen|widget|flow description]"
+  },
+  "shape": {
+    "description": "Plan Flutter UX/UI before writing Dart. Defines user goal, widget structure, state model, adaptive layout, theme usage, accessibility risks, and verification steps. Use before implementing a Flutter screen or flow.",
+    "argumentHint": "[feature to shape]"
+  },
+  "teach": {
+    "description": "Gather product and design context for a Flutter project. Writes PRODUCT.md and optionally DESIGN.md so future commands understand users, register, brand, ThemeData, ColorScheme, TextTheme, and app patterns.",
+    "argumentHint": ""
+  },
+  "document": {
+    "description": "Generate DESIGN.md from a Flutter project by extracting ThemeData, ColorScheme, TextTheme, ThemeExtension, pubspec fonts and assets, component themes, and reusable widgets.",
+    "argumentHint": ""
+  },
+  "extract": {
+    "description": "Consolidate repeated Flutter widgets, ThemeData values, ColorScheme roles, TextTheme styles, and component themes into a reusable design system.",
+    "argumentHint": "[target]"
+  },
+  "critique": {
+    "description": "Review a Flutter screen or flow from a UX design perspective using screenshots, Dart source, ThemeData, platform conventions, accessibility, cognitive load, and generated-app anti-patterns.",
+    "argumentHint": "[screen|flow|widget]"
+  },
+  "audit": {
+    "description": "Run Flutter technical quality checks across Semantics, accessibility, performance, theming, adaptive layout, localization, resilience, and tests. Produces a scored report with P0-P3 findings.",
+    "argumentHint": "[lib path|screen|widget]"
+  },
+  "polish": {
+    "description": "Perform a final Flutter UI quality pass for alignment, spacing, TextTheme consistency, interactive states, Semantics, text scaling, light/dark theme, and code cleanliness.",
+    "argumentHint": "[target]"
+  },
+  "adapt": {
+    "description": "Adapt Flutter UI across mobile devices, tablet widths, orientation, keyboard insets, SafeArea, text scaling, RTL, and native platform expectations using MediaQuery and LayoutBuilder.",
+    "argumentHint": "[target] [context]"
+  },
+  "harden": {
+    "description": "Make Flutter UI production-ready for real data, text overflow, i18n, RTL, offline states, permissions, app lifecycle, deep links, keyboard overlap, and interrupted flows.",
+    "argumentHint": "[target]"
+  },
+  "optimize": {
+    "description": "Diagnose and improve Flutter UI performance including rebuild scope, const widgets, list builders, slivers, image decode, shader jank, animation cost, and DevTools frame issues.",
+    "argumentHint": "[target]"
+  },
+  "clarify": {
+    "description": "Improve Flutter UX copy, localized labels, form errors, empty states, SnackBars, dialogs, tooltips, and Semantics labels.",
+    "argumentHint": "[target]"
+  },
+  "typeset": {
+    "description": "Improve Flutter typography through TextTheme roles, font assets, hierarchy, readability, text scaling, and localization-safe labels.",
+    "argumentHint": "[target]"
+  },
+  "colorize": {
+    "description": "Improve Flutter color through ColorScheme, ThemeExtension, semantic state colors, light/dark contrast, and reduced hard-coded Color usage.",
+    "argumentHint": "[target]"
+  },
+  "layout": {
+    "description": "Fix Flutter layout, constraints, spacing, scroll structure, SafeArea, keyboard behavior, thumb reach, and hierarchy.",
+    "argumentHint": "[target]"
+  },
+  "animate": {
+    "description": "Add purposeful Flutter motion using AnimatedSwitcher, implicit animations, Hero, AnimationController, and performance-aware transitions.",
+    "argumentHint": "[target]"
+  },
+  "onboard": {
+    "description": "Design Flutter onboarding, first-run flows, permission education, empty states, activation moments, and resumable setup flows.",
+    "argumentHint": "[target]"
+  }
+}
