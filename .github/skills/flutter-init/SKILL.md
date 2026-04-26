@@ -23,6 +23,7 @@ The generated flutter-dev skill must do all of the following:
 - organize each plugin's best-practice usage and supported use cases
 - convert those findings into mandatory implementation rules
 - require a strict clean architecture structure for all project work
+- dynamically detect dependency families that define the project's default implementation style and promote those families into project-wide mandatory rules instead of leaving them as optional plugin notes
 
 Do not expand scope to unrelated files unless the user explicitly changes the requirement.
 
@@ -43,6 +44,7 @@ Do not expand scope to unrelated files unless the user explicitly changes the re
    - the allowed architectural layer
    - the preferred integration pattern
    - misuse or anti-patterns to reject
+   Dynamically evaluate whether any detected dependency family defines a project-wide implementation convention rather than a feature-local capability. When it does, require flutter-dev to elevate that family into a project-wide mandatory rule and explain which package presence or pubspec signal triggered the elevation. Common examples include localization pipelines, model/code-generation conventions, and state-management/provider declaration style, but the generated rule set must be derived from the actual dependency set rather than copied from a fixed checklist.
 
 5. Encode strict clean architecture rules into flutter-dev.
    Require a separation of presentation, domain, and data layers. Keep dependency direction inward. Keep framework and plugin code out of domain entities and use cases. Route plugin access through adapters, gateways, or repository implementations instead of direct UI or domain coupling.
@@ -66,6 +68,8 @@ Do not expand scope to unrelated files unless the user explicitly changes the re
 - pubspec.yaml plugin declarations were reviewed for this initialization pass.
 - Each relevant plugin has an allowed use case and integration boundary.
 - Strict clean architecture rules are explicit and mandatory.
+- Any dependency family that establishes a project-wide implementation convention has been elevated from plugin guidance to a mandatory project rule in flutter-dev.
+- flutter-dev states which detected packages or pubspec signals triggered each elevated mandatory rule.
 - No unrelated files were changed.
 
 ## Expected Output When Invoked
@@ -75,4 +79,5 @@ Summarize:
 - whether flutter-dev was created or refreshed
 - which plugin groups were identified from pubspec.yaml
 - which clean architecture constraints were added
+- which dependency families were elevated to project-wide mandatory defaults and what detected package presence or pubspec signal triggered each one
 - which assumptions still need user confirmation
