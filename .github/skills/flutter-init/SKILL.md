@@ -24,6 +24,8 @@ The generated flutter-dev skill must do all of the following:
 - convert those findings into mandatory implementation rules
 - require a strict clean architecture structure for all project work
 - define explicit clean architecture directory conventions in flutter-dev to prevent later structural drift
+- require one primary class per file so file responsibility stays singular
+- require files longer than 800 lines to be split into smaller files by responsibility
 
 Do not expand scope to unrelated files unless the user explicitly changes the requirement.
 
@@ -46,7 +48,7 @@ Do not expand scope to unrelated files unless the user explicitly changes the re
    - misuse or anti-patterns to reject
 
 5. Encode strict clean architecture rules into flutter-dev.
-   Require a separation of presentation, domain, and data layers. Keep dependency direction inward. Keep framework and plugin code out of domain entities and use cases. Route plugin access through adapters, gateways, or repository implementations instead of direct UI or domain coupling. Define the required directory conventions for these layers inside flutter-dev so later implementation work follows a stable structure instead of introducing ad hoc folder changes.
+   Require a separation of presentation, domain, and data layers. Keep dependency direction inward. Keep framework and plugin code out of domain entities and use cases. Route plugin access through adapters, gateways, or repository implementations instead of direct UI or domain coupling. Define the required directory conventions for these layers inside flutter-dev so later implementation work follows a stable structure instead of introducing ad hoc folder changes. Also require one primary class per file to preserve single responsibility at the file level, and require any file that grows beyond 800 lines to be split into smaller files along responsibility boundaries.
 
 6. Make the guidance enforceable.
    Prefer mandatory wording such as must, must not, and only when. Reject broad advice that cannot be checked during implementation. The generated skill should force feature work to declare affected layers, target directories, repository contracts, use cases, DTOs, mappers, and state flow when relevant.
@@ -67,6 +69,8 @@ Do not expand scope to unrelated files unless the user explicitly changes the re
 - pubspec.yaml plugin declarations were reviewed for this initialization pass.
 - Each relevant plugin has an allowed use case and integration boundary.
 - Strict clean architecture rules and directory conventions are explicit and mandatory.
+- flutter-dev explicitly requires one primary class per file.
+- flutter-dev explicitly caps file length at 800 lines before requiring a split.
 - No unrelated files were changed.
 
 ## Expected Output When Invoked
