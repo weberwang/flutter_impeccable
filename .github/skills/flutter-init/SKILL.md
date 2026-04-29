@@ -32,13 +32,13 @@ Do not expand scope to unrelated files unless the user explicitly changes the re
 ## Procedure
 
 1. Constrain the task.
-   Work only on generating or updating the workspace-scoped flutter-dev skill at .claude/skills/flutter-dev/SKILL.md. Do not modify app code, UI, CI, or other documentation.
+   Work only on generating or updating the workspace-scoped flutter-dev skill at .github/skills/flutter-dev/SKILL.md. Do not modify app code, UI, CI, or other documentation.
 
 2. Gather only the minimum project context needed.
    Look for pubspec.yaml at the repo root first. If not found there, search one level deep (e.g. packages/, apps/). If multiple are found, STOP and ask the user which one to use before continuing. If pubspec.yaml is not found at all, STOP and tell the user the file was not located, then ask them to confirm the project path. Treat pubspec.yaml as the source of truth for this initialization pass. Do not broaden the audit into other files unless the user explicitly asks.
 
-3. Run the [skill-creator] command.
-   Invoke [skill-creator] to generate flutter-dev as a project implementation guidance skill, not as a general checklist. Pass the target path .claude/skills/flutter-dev/SKILL.md explicitly so the file is written directly without further prompting. The file created in this step is a skeleton. Steps 4 and 5 fill its content. Do not attempt to populate plugin rules or architecture rules during this step.
+3. Run the [create-skill] command.
+   Invoke [create-skill] to generate flutter-dev as a project implementation guidance skill, not as a general checklist. Pass the target path .github/skills/flutter-dev/SKILL.md explicitly so the file is written directly without further prompting. The file created in this step is a skeleton. Steps 4 and 5 fill its content. Do not attempt to populate plugin rules or architecture rules during this step.
 
 4. Encode plugin governance into flutter-dev.
    For each plugin found in pubspec.yaml, document:
@@ -93,18 +93,18 @@ Do not expand scope to unrelated files unless the user explicitly changes the re
 - If a plugin can live in more than one layer, choose the highest boundary that preserves dependency inversion and architectural isolation.
 - If plugin usage is unclear, classify it conservatively and require an adapter boundary before application code can depend on it.
 - If the existing project structure conflicts with strict clean architecture, preserve the architecture rule in flutter-dev, define the target directory convention explicitly, and note the mismatch without relaxing the rule.
-- If flutter-dev already exists at .claude/skills/flutter-dev/SKILL.md, read it first, then merge the updated plugin governance and architecture rules into the existing content. Do not silently overwrite content that is not being changed by this initialization pass.
+- If flutter-dev already exists at .github/skills/flutter-dev/SKILL.md, read it first, then merge the updated plugin governance and architecture rules into the existing content. Do not silently overwrite content that is not being changed by this initialization pass.
 
 ## Completion Checks
 
-- flutter-dev is created or updated at .claude/skills/flutter-dev/SKILL.md.
+- flutter-dev is created or updated at .github/skills/flutter-dev/SKILL.md.
 - pubspec.yaml plugin declarations were reviewed for this initialization pass.
 - Each relevant plugin has an allowed use case and integration boundary.
 - Strict clean architecture rules and directory conventions are explicit and mandatory.
 - flutter-dev explicitly requires one primary class per file.
 - flutter-dev explicitly caps file length at 800 lines before requiring a split.
 - No unrelated files were changed.
-- Verify by reading .claude/skills/flutter-dev/SKILL.md and confirming it contains the word "must", at least one plugin entry or a note that none were found, and the strings "lib/presentation", "lib/domain", "lib/data".
+- Verify by reading .github/skills/flutter-dev/SKILL.md and confirming it contains the word "must", at least one plugin entry or a note that none were found, and the strings "lib/presentation", "lib/domain", "lib/data".
 
 ## Expected Output When Invoked
 
