@@ -1,7 +1,7 @@
 ---
 name: project-planning
-description: "Turn product ideas, requirement discussions, tech stack choices, product branch planning, module decomposition, and design direction discussions into an executable delivery plan. Use for PRD framing, MVP definition, roadmap sequencing, architecture option comparison, module design docs, and design branch decisions."
-argument-hint: "[目标/产品想法] [阶段: 正式版 / MVP / growth / rewrite] [输出: 模块设计 / 执行计划 / 分支比较 / PRD]"
+description: "进入计划模式，围绕产品想法、需求讨论、技术栈取舍、产品分支规划、模块拆解和设计方向做协作式规划。默认先讨论再定案；遇到分支、关键缺口或不确定判断时，先与用户确认，再继续细化执行计划。Use for PRD framing, MVP definition, roadmap sequencing, architecture option comparison, module design docs, and design branch decisions."
+argument-hint: "[目标/产品想法] [阶段: 正式版 / MVP / growth / rewrite] [输出: 模块设计 / 执行计划 / 分支比较 / PRD] [是否需要先讨论确认]"
 user-invocable: true
 ---
 
@@ -10,6 +10,7 @@ user-invocable: true
 ## Purpose
 
 - 把用户的需求目标、产品想法、技术栈讨论和产品方向分歧，收敛成一份可以执行落地的产品规划，而不是停留在泛化建议。
+- 默认以**计划模式**工作：先澄清事实、列出决策点、标出待确认项，再在用户确认后固化为正式规划。
 - **需求必须基于事实**：优先验证需求是否真实存在（用户反馈、市场调研、已验证假设），如果需求不成立或缺乏基础，直接返回结论而不继续规划。
 - 在讨论过程中识别关键决策点，明确哪些必须先定，哪些可以延后，哪些需要用分支方案并行评估。
 - 默认优先输出模块设计文档；根据任务需要再补完整规划、阶段路线图、分支比较结论或设计分支建议。
@@ -52,6 +53,7 @@ user-invocable: true
 - 若用户未指定输出类型，先产出模块设计文档（前提是需求已通过验证）。
 - 若用户未指定阶段，按正式版目标倒推范围、模块和里程碑。
 - 若用户提到设计分支但未指定深度，优先讨论视觉方向，不默认下钻到页面级细节。
+- 若出现两个及以上合理方向，先保留为待确认分支，不静默替用户拍板。
 
 ## Working Principles
 ### 0. Requirements Must Be Grounded In Facts
@@ -74,11 +76,17 @@ user-invocable: true
 
 - 只有当方向差异会显著影响产品范围、技术方案、时间成本、体验或商业目标时，才建立分支比较。
 - 分支不应只是换个说法；每个分支都必须有明确的战略偏向和适用条件。
+- 当存在多个合理分支、且用户尚未明确取向时，必须先给出分支差异、影响和推荐，再等待用户确认；未确认前不能把某个分支写成既定基线。
 
 ### 4. Decompose By User Value And Delivery Boundaries
 
 - 模块拆分优先围绕用户价值链路、业务能力边界、数据边界和交付边界，而不是按页面数量机械拆分。
 - 设计分支优先围绕视觉方向、品牌气质、信息层级、核心操作路径和实现约束，而不是只比较配色或风格词。
+
+### 5. Stay In Plan Mode Until Confirmed
+
+- 默认输出草案、候选分支、待确认项和下一步决策，不把未确认事项包装成最终结论。
+- 即使给出推荐，也必须区分“推荐方向”和“已确认方向”；只有用户确认后，才能按该方向继续细化可执行计划。
 
 ## Required Inputs
 
@@ -113,6 +121,21 @@ user-invocable: true
 - 若要拆模块，先问主流程、关键对象和系统边界。
 - 若要做设计分支，先问信息密度、品牌倾向、平台形态和实现约束。
 
+### Branch And Uncertainty Confirmation
+
+遇到下面情况时，必须先与用户讨论确认，再继续：
+
+- 存在两个及以上都合理的产品、设计、技术或范围分支。
+- 关键输入缺失，继续细化会显著改变范围、成本、时序或体验。
+- 结论依赖尚未验证的核心假设。
+- 推荐方向会直接排除其他重要路径。
+
+确认时遵循以下规则：
+
+- 只列最少量、最高价值的待确认问题，不把用户拖进低价值细节。
+- 每个待确认点都要附上选项差异、主要影响和建议。
+- 如果用户暂时不决策，保留多分支草案，明确哪些内容可先推进，哪些必须等待确认。
+
 ## Planning Flow
 
 ### 0. Validate Requirement Foundation (Gate)
@@ -144,6 +167,9 @@ user-invocable: true
 - 判断哪些约束是硬约束，哪些只是偏好。
 
 ### 4. Choose The Planning Path
+
+- 若当前存在两个以上合理路径，先输出路径差异、适用条件和推荐，再等待用户确认；未确认前不展开单一路径的完整细节。
+- 若用户明确要求“先讨论不定案”，保持讨论模式，只给草案和决策点，不直接输出最终版文档。
 
 #### Path A: Executable Product Plan
 
@@ -227,6 +253,7 @@ user-invocable: true
 ### 6. Add Decision Discipline
 
 - 每个关键结论都要标注：已定、待确认、需验证。
+- `待确认` 项只能在用户明确确认后升级为 `已定`，不能在后续文档中被静默改写。
 - 若存在阻塞，明确是谁需要提供什么信息，才能推进到下一步。
 - 若需要后续跨职能协作，写清产品、设计、研发各自的后续动作。
 
@@ -271,9 +298,13 @@ user-invocable: true
 - 必要时先给一版骨架，再补每个模块或分支细节。
 - 如果输入信息不足，先补关键问题，不伪装成确定结论。
 - 如果用户已经给出强约束，围绕约束优化，而不是重新发散。
+- 需要确认时，优先采用“已知事实 / 分支选项 / 推荐 / 待你确认 / 下一步”的结构。
+- 用户未确认前，输出计划草案或讨论稿，而不是最终定稿。
 
 ## Example Prompts
 
+- /project-planning 进入计划模式，先和我讨论确认正式版范围，再输出模块设计草案
+- /project-planning 先不要替我选方向，把产品分支列出来并等我确认后再继续
 - /project-planning 把这个产品目标拆成正式版的账号、订阅、内容发布、数据看板模块设计文档
 - /project-planning 基于正式版目标，先做模块设计，再给出阶段落地顺序
 - /project-planning 帮我验证这个功能想法，用户反馈和市场信号如何？
